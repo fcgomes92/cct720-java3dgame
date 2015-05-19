@@ -1,0 +1,32 @@
+SimpleUniverse: o que mantem tudo junto
+BranchGroup: base de cada objeto
+Geometria: detalhes de cada Branch
+
+Luzes:
+	Direcional: raio direcional
+		Influência
+		Cor
+		Direção
+	Ambiente: ponto de luz
+	
+Transformações:
+	Regra da mão direita para coordenadas
+	Unidade: metros
+	Utiliza transformações de matriz no TransformGroup -> TransformObject
+	
+Aparêcia:
+	Aplicado no grupo de geometria
+	Atributos
+		Material
+		Transparencia
+		Cor
+		Textura
+		
+Processo inicial:
+	Applet
+	Canvas 3D
+	Criação do Universo
+	Criação dos Branch Groups
+	
+
+		

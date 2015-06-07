@@ -37,7 +37,19 @@ public class BouncyBall extends Applet implements ActionListener, KeyListener{
 	private float sign = 1.0f;
 	private float xLoc = 0.0f;
 	
+	private Transform3D toMove = new Transform3D();
+	
 	private Timer timer;
+	
+	private Vector3d posInicial = new Vector3d(0,0,0);
+	
+	private float puxada = 0.0f;
+	
+	private boolean aimed = false;
+	private float maxDistance = 1.0f;
+	private float altura = 0.0f;
+	private float step = 1;
+	private long sleep = 50;
 	
 	public BouncyBall(){
 		setLayout(new BorderLayout());
@@ -79,7 +91,7 @@ public class BouncyBall extends Applet implements ActionListener, KeyListener{
 		Sphere sphere = new Sphere(0.25f);
 		
 		Transform3D pos1 = new Transform3D();
-		pos1.setTranslation(new Vector3d(0,0,0));
+		pos1.setTranslation(this.posInicial);
 		
 		objTrans.setTransform(pos1);
 		objTrans.addChild(sphere);
@@ -105,8 +117,70 @@ public class BouncyBall extends Applet implements ActionListener, KeyListener{
 	}
 	
 	@Override
-	public void keyPressed(KeyEvent arg0) {
-		// TODO Auto-generated method stub
+	public void keyPressed(KeyEvent k) {
+		double distAtual = 0.0; 
+		System.out.println("Pressed: " + k.getKeyChar());
+		if(k.getKeyChar()=='a'){
+			
+			this.objTrans.getTransform(transform);
+			this.toMove.setTranslation(new Vector3d(-0.15f,0,0));
+			this.transform.mul(this.toMove);
+			this.objTrans.setTransform(transform);
+			
+//			this.transform.setScale(new Vector3d(1,1,1));
+//			this.transform.setTranslation(new Vector3d(xLoc-height, height/2, height*(-3)));
+//			this.objTrans.setTransform(transform);
+		}
+		else if(k.getKeyChar()=='d'){
+			this.objTrans.getTransform(transform);
+			this.toMove.setTranslation(new Vector3d(0.15f,0,0));
+			this.transform.mul(this.toMove);
+			this.objTrans.setTransform(transform);
+//			this.transform.setScale(new Vector3d(1,1,1));
+//			this.transform.setTranslation(new Vector3d(xLoc+height, height*2, height/(-3)));
+//			this.objTrans.setTransform(transform);
+		}
+		else if(k.getKeyCode()==KeyEvent.VK_SPACE){
+			int t = 1;
+			if(this.aimed){
+				while(distAtual<maxDistance+altura){
+					this.objTrans.getTransform(transform);
+					this.toMove.setTranslation(new Vector3d(0f,-0.005*t*t,-(puxada*t)));
+					this.transform.mul(this.toMove);
+					this.objTrans.setTransform(transform);
+					distAtual+=this.step*(0.005*t*t);
+					t++;
+					try {
+						Thread.sleep(sleep);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				aimed=false;
+			}
+			else{
+				this.toMove.setTranslation(posInicial);
+				this.objTrans.setTransform(toMove);
+				this.aimed=true;
+				this.puxada = 0.0f;
+				this.altura = 0.0f;
+			}
+		}
+		else if(k.getKeyCode()==KeyEvent.VK_S){
+			this.puxada += 0.01f;
+			this.objTrans.getTransform(transform);
+			this.toMove.setTranslation(new Vector3d(0,0,puxada));
+			this.transform.mul(this.toMove);
+			this.objTrans.setTransform(transform);
+		}
+		else if(k.getKeyCode()==KeyEvent.VK_W){
+			this.altura+=0.1f;
+			this.objTrans.getTransform(transform);
+			this.toMove.setTranslation(new Vector3d(0,altura,0));
+			this.transform.mul(this.toMove);
+			this.objTrans.setTransform(transform);
+		}
 		
 	}
 
@@ -117,9 +191,7 @@ public class BouncyBall extends Applet implements ActionListener, KeyListener{
 	}
 
 	@Override
-	public void keyTyped(KeyEvent arg0) {
-		// TODO Auto-generated method stub
-		
+	public void keyTyped(KeyEvent k) {
 	}
 
 	@Override
@@ -145,8 +217,11 @@ public class BouncyBall extends Applet implements ActionListener, KeyListener{
 			else{
 				transform.setScale(new Vector3d(1,1,1));
 			}
-			
-			transform.setTranslation(new Vector3d(xLoc+height, height/2, height*(-3)));
+//			transform.setTranslation(new Vector3d(xLoc+height, height/2, height*(-3)));
+			this.objTrans.getTransform(transform);
+			this.toMove.setTranslation(new Vector3d(0.1,0.1,0.1));
+			this.transform.mul(this.toMove);
+			this.objTrans.setTransform(transform);
 			objTrans.setTransform(transform);
 		}
 	}

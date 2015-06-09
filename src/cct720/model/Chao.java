@@ -13,7 +13,7 @@ import javax.vecmath.Vector3d;
 import com.sun.j3d.utils.geometry.Text2D;
 
 public class Chao {
-	private final static int FLOOR_LEN = 51;
+	private final static int FLOOR_LEN = 31;
 	
 	private final static Color3f blue = new Color3f(0.0f, 0.1f, 0.4f);
 	private final static Color3f green = new Color3f(0.0f, 0.5f, 0.1f);

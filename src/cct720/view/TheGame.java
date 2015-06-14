@@ -13,6 +13,11 @@ import cct720.control.BeginGameControl;
 
 public class TheGame extends JFrame{
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	private JLabel labelQuantidadeBolas;
 	private JPanel gamePanel;
 	

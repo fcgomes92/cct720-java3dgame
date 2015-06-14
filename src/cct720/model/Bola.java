@@ -16,6 +16,7 @@ public class Bola {
 	private TransformGroup tg = new TransformGroup();
 	private BranchGroup branchGroup = new BranchGroup();
 	private float peso;
+	private float raio;
 
 	public Bola(Vector3f posInicial, float peso, float raio) {
 		Color3f black = new Color3f(0.0f, 0.0f, 0.0f);
@@ -28,6 +29,7 @@ public class Bola {
 		Appearance blueApp = new Appearance();
 		blueApp.setMaterial(blueMat);
 
+		this.raio = raio;
 		this.sphere = new Sphere(raio, blueApp);
 
 		Transform3D td = new Transform3D();
@@ -77,5 +79,13 @@ public class Bola {
 
 	public void setBranchGroup(BranchGroup branchGroup) {
 		this.branchGroup = branchGroup;
+	}
+
+	public float getRaio() {
+		return raio;
+	}
+
+	public void setRaio(float raio) {
+		this.raio = raio;
 	}
 }

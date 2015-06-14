@@ -43,7 +43,6 @@ public class Chao {
 		floorBG.addChild(new ColouredTiles(greenCoords, green));
 
 		addOriginMarker();
-		labelAxes();
 	}
 
 	private void createCoords(int x, int z, ArrayList coords){
@@ -71,32 +70,6 @@ public class Chao {
 		oCoords.add(p4);
 
 		floorBG.addChild(new ColouredTiles(oCoords, medRed));
-	}
-
-	private void labelAxes(){
-		Vector3d pt = new Vector3d();
-		for (int i = -FLOOR_LEN / 2; i <= FLOOR_LEN / 2; i++) {
-			pt.x = i;
-			floorBG.addChild(makeText(pt, "" + i)); // along x-axis
-		}
-
-		pt.x = 0;
-		for (int i = -FLOOR_LEN / 2; i <= FLOOR_LEN / 2; i++) {
-			pt.z = i;
-			floorBG.addChild(makeText(pt, "" + i)); // along z-axis
-		}
-	}
-
-	private TransformGroup makeText(Vector3d vertex, String text){
-		Text2D message = new Text2D(text, white, "SansSerif", 36, Font.BOLD);
-		// 36 point bold Sans Serif
-
-		TransformGroup tg = new TransformGroup();
-		Transform3D t3d = new Transform3D();
-		t3d.setTranslation(vertex);
-		tg.setTransform(t3d);
-		tg.addChild(message);
-		return tg;
 	}
 
 	public BranchGroup getBG() {

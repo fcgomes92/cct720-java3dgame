@@ -10,4 +10,11 @@ public class BolaControl {
 		return new Bola(posInical,(float)Math.random()*30.0f,(float)Math.random()*1.0f);
 	}
 	
+	public boolean moveBola(){
+		
+		
+		
+		return false;
+	}
+	
 }

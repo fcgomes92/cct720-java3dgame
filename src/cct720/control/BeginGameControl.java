@@ -16,6 +16,7 @@ import cct720.model.Cubo;
 import cct720.model.MainUniverse;
 import cct720.view.TheGame;
 
+import com.sun.j3d.utils.geometry.Box;
 import com.sun.j3d.utils.universe.SimpleUniverse;
 
 public class BeginGameControl {
@@ -37,7 +38,7 @@ public class BeginGameControl {
 	private float V0x = -10.0f;
 	private float X0 = 10.0f;
 	private float Y0 = 5.0f;
-	private float gravity = 10.0f;
+	private float gravity = 2.0f;
 	private float x = X0;
 	private float y = Y0;
 	private float z = 0.0f;
@@ -52,6 +53,8 @@ public class BeginGameControl {
 	private TheGame theGame;
 	private BolaControl bolaControl = new BolaControl();
 	private CuboControl cuboControl = new CuboControl();
+	private ObstacleCollisionControl obstacleCollisionControl;
+	private TargetCollisionControl targetCollisionControl;
 	private Queue<Bola> bolas = new LinkedList<Bola>();
 	private Queue<Cubo> obstaculos = new LinkedList<Cubo>();
 	private Queue<Cubo> alvos = new LinkedList<Cubo>();
@@ -171,6 +174,18 @@ public class BeginGameControl {
 			cuboInicial = i % 2 == 0 ? cuboControl.criarCuboAleatorio(true)
 					: cuboControl.criarCuboAleatorio(false);
 			obstaculos.add(cuboInicial);
+			obstacleCollisionControl = new ObstacleCollisionControl(cuboInicial.getBox().getShape(Box.BACK), cuboInicial.getBox().getBounds(), su, this);
+			cuboInicial.getBranchGroup().addChild(obstacleCollisionControl);
+			obstacleCollisionControl = new ObstacleCollisionControl(cuboInicial.getBox().getShape(Box.FRONT), cuboInicial.getBox().getBounds(), su, this);
+			cuboInicial.getBranchGroup().addChild(obstacleCollisionControl);
+			obstacleCollisionControl = new ObstacleCollisionControl(cuboInicial.getBox().getShape(Box.TOP), cuboInicial.getBox().getBounds(), su, this);
+			cuboInicial.getBranchGroup().addChild(obstacleCollisionControl);
+			obstacleCollisionControl = new ObstacleCollisionControl(cuboInicial.getBox().getShape(Box.BOTTOM), cuboInicial.getBox().getBounds(), su, this);
+			cuboInicial.getBranchGroup().addChild(obstacleCollisionControl);
+			obstacleCollisionControl = new ObstacleCollisionControl(cuboInicial.getBox().getShape(Box.LEFT), cuboInicial.getBox().getBounds(), su, this);
+			cuboInicial.getBranchGroup().addChild(obstacleCollisionControl);
+			obstacleCollisionControl = new ObstacleCollisionControl(cuboInicial.getBox().getShape(Box.RIGHT), cuboInicial.getBox().getBounds(), su, this);
+			cuboInicial.getBranchGroup().addChild(obstacleCollisionControl);
 			su.sceneBG.addChild(cuboInicial.getBranchGroup());
 		}
 
@@ -179,6 +194,18 @@ public class BeginGameControl {
 			cuboInicial = i % 2 == 0 ? cuboControl.gerarAlvos(true)
 					: cuboControl.gerarAlvos(false);
 			alvos.add(cuboInicial);
+			targetCollisionControl = new TargetCollisionControl(cuboInicial.getBox().getShape(Box.BACK), cuboInicial.getBox().getBounds(), su, this, cuboInicial);
+			cuboInicial.getBranchGroup().addChild(targetCollisionControl);
+			targetCollisionControl = new TargetCollisionControl(cuboInicial.getBox().getShape(Box.FRONT), cuboInicial.getBox().getBounds(), su, this, cuboInicial);
+			cuboInicial.getBranchGroup().addChild(targetCollisionControl);
+			targetCollisionControl = new TargetCollisionControl(cuboInicial.getBox().getShape(Box.TOP), cuboInicial.getBox().getBounds(), su, this, cuboInicial);
+			cuboInicial.getBranchGroup().addChild(targetCollisionControl);
+			targetCollisionControl = new TargetCollisionControl(cuboInicial.getBox().getShape(Box.BOTTOM), cuboInicial.getBox().getBounds(), su, this, cuboInicial);
+			cuboInicial.getBranchGroup().addChild(targetCollisionControl);
+			targetCollisionControl = new TargetCollisionControl(cuboInicial.getBox().getShape(Box.LEFT), cuboInicial.getBox().getBounds(), su, this, cuboInicial);
+			cuboInicial.getBranchGroup().addChild(targetCollisionControl);
+			targetCollisionControl = new TargetCollisionControl(cuboInicial.getBox().getShape(Box.RIGHT), cuboInicial.getBox().getBounds(), su, this, cuboInicial);
+			cuboInicial.getBranchGroup().addChild(targetCollisionControl);
 			su.sceneBG.addChild(cuboInicial.getBranchGroup());
 		}
 
@@ -206,5 +233,13 @@ public class BeginGameControl {
 		x = xInicial;
 		y = yInicial;
 		z = zInicial;
+	}
+
+	public Bola getShootingBall() {
+		return shootingBall;
+	}
+
+	public void setShootingBall(Bola shootingBall) {
+		this.shootingBall = shootingBall;
 	}
 }

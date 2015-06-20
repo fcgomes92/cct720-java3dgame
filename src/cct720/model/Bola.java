@@ -31,6 +31,7 @@ public class Bola {
 
 		this.raio = raio;
 		this.sphere = new Sphere(raio, blueApp);
+		this.sphere.setUserData("Shooting Ball");
 
 		Transform3D td = new Transform3D();
 		td.set(posInicial);
@@ -45,7 +46,7 @@ public class Bola {
 		this.branchGroup.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
 		
 		this.branchGroup.addChild(this.tg);
-
+		
 		this.peso = peso;
 	}
 

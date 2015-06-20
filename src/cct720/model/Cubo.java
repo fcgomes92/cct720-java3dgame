@@ -29,6 +29,7 @@ public class Cubo {
 		blueApp.setMaterial(blueMat);
 
 		this.box = new Box(pontos[0],pontos[1],pontos[2],blueApp);
+		this.box.setUserData("Fix");
 
 		Transform3D td = new Transform3D();
 		td.set(p1);

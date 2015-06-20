@@ -17,8 +17,8 @@ public class CuboControl {
 	}
 	
 	public Cubo gerarParede(){
-		return new Cubo(new Vector3f(-10.0f, 5.0f, 0),
-				new float[] {0.0f,5.0f,10.0f},30.0f, 
+		return new Cubo(new Vector3f(-10.0f, 10.0f, 0),
+				new float[] {0.0f,10.0f,15.0f},30.0f, 
 				new Color3f(0.3f,0.3f,0.3f), new Color3f(0.0f,0.0f,0.0f), new Color3f(0.3f,0.3f,0.3f));
 	}
 	

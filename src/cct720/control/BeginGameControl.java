@@ -6,11 +6,19 @@ import java.awt.event.KeyListener;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Canvas3D;
+import javax.media.j3d.ImageComponent2D;
+import javax.media.j3d.Switch;
+import javax.media.j3d.Texture;
+import javax.media.j3d.Texture2D;
 import javax.media.j3d.Transform3D;
+import javax.media.j3d.TransformGroup;
+import javax.vecmath.Point3f;
 import javax.vecmath.Vector3d;
 import javax.vecmath.Vector3f;
 
+import cct720.model.Animacao;
 import cct720.model.Bola;
 import cct720.model.Cubo;
 import cct720.model.MainUniverse;
@@ -38,7 +46,7 @@ public class BeginGameControl {
 	private float V0x = -10.0f;
 	private float X0 = 10.0f;
 	private float Y0 = 5.0f;
-	private float gravity = 2.0f;
+	private float gravity = 10.0f;
 	private float x = X0;
 	private float y = Y0;
 	private float z = 0.0f;
@@ -60,8 +68,25 @@ public class BeginGameControl {
 	private Queue<Cubo> alvos = new LinkedList<Cubo>();
 	private Bola shootingBall;
 	private MainUniverse su;
+	
+	private Cubo cuboInicial = null;
+	private Bola bolaInicial = null;
+	
+
+	// Carrega as imagens da explosão
+//	private Switch explSwitch;
+	private float explSize = 5.0f;
+	private Animacao explShape;
+	private AnimacaoControl animacaoControl = new AnimacaoControl();
+	private ImageComponent2D[] exploIms;
+	private TransformGroup explTG;
+	private BranchGroup explBG;
 
 	public BeginGameControl() {
+
+		// Inicializa as imagens de animação
+		this.exploIms = this.animacaoControl.loadImages("imgs/explo/explo", 6);
+
 		// Gerar Canvas3D
 		GraphicsConfiguration config = SimpleUniverse
 				.getPreferredConfiguration();
@@ -69,16 +94,10 @@ public class BeginGameControl {
 		canvas3D.addKeyListener(new KeyListener() {
 
 			@Override
-			public void keyTyped(KeyEvent e) {
-				// TODO Auto-generated method stub
-
-			}
+			public void keyTyped(KeyEvent e) {}
 
 			@Override
-			public void keyReleased(KeyEvent e) {
-				// TODO Auto-generated method stub
-
-			}
+			public void keyReleased(KeyEvent e) {}
 
 			@Override
 			public void keyPressed(KeyEvent k) {
@@ -89,8 +108,10 @@ public class BeginGameControl {
 				if (k.getKeyChar() == (KeyEvent.VK_SPACE)) {
 					if (shootingBall != null) {
 						try {
-							if(!bolaControl.moveBola(TIME, X0, Y0, x, y, z, V0x, gravity, shootingBall))
-								bolaControl.deformBola(TIME, X0, Y0, x, y, z, V0x, gravity, shootingBall);
+							if (!bolaControl.moveBola(TIME, X0, Y0, x, y, z,
+									V0x, gravity, shootingBall))
+								bolaControl.deformBola(TIME, X0, Y0, x, y, z,
+										V0x, gravity, shootingBall);
 							// System.out.println("x: " + x +
 							// "\ny: " + y +
 							// "\nz: " + z);
@@ -146,11 +167,11 @@ public class BeginGameControl {
 					}
 					/*** Teclas para alterar a velocidade inicial de lançamento ****/
 				} else if (k.getKeyChar() == 'z') {
-					if(V0x >= 0.0f)
-						V0x+=1.0f;
+					if (V0x >= 0.0f)
+						V0x += 1.0f;
 				} else if (k.getKeyChar() == 'x') {
-					if(V0x <= -30.0f)
-						V0x-=1.0f;
+					if (V0x <= -30.0f)
+						V0x -= 1.0f;
 				}
 
 			}
@@ -162,62 +183,123 @@ public class BeginGameControl {
 		su = new MainUniverse(canvas3D);
 
 		// Inicia um conjunto de 10 bolas para lançar
-		Bola bolaInicial = null;
-		for (int i = 0; i < 10; i++) {
-			bolaInicial = bolaControl.criarBolaAleatoria(shootinPos);
-			bolas.add(bolaInicial);
-		}
+		this.iniciarBolas();
 
 		// Iniciar um conjunto de 10 obstaculos
-		Cubo cuboInicial = null;
-		for (int i = 0; i < 10; i++) {
-			cuboInicial = i % 2 == 0 ? cuboControl.criarCuboAleatorio(true)
-					: cuboControl.criarCuboAleatorio(false);
-			obstaculos.add(cuboInicial);
-			obstacleCollisionControl = new ObstacleCollisionControl(cuboInicial.getBox().getShape(Box.BACK), cuboInicial.getBox().getBounds(), su, this);
-			cuboInicial.getBranchGroup().addChild(obstacleCollisionControl);
-			obstacleCollisionControl = new ObstacleCollisionControl(cuboInicial.getBox().getShape(Box.FRONT), cuboInicial.getBox().getBounds(), su, this);
-			cuboInicial.getBranchGroup().addChild(obstacleCollisionControl);
-			obstacleCollisionControl = new ObstacleCollisionControl(cuboInicial.getBox().getShape(Box.TOP), cuboInicial.getBox().getBounds(), su, this);
-			cuboInicial.getBranchGroup().addChild(obstacleCollisionControl);
-			obstacleCollisionControl = new ObstacleCollisionControl(cuboInicial.getBox().getShape(Box.BOTTOM), cuboInicial.getBox().getBounds(), su, this);
-			cuboInicial.getBranchGroup().addChild(obstacleCollisionControl);
-			obstacleCollisionControl = new ObstacleCollisionControl(cuboInicial.getBox().getShape(Box.LEFT), cuboInicial.getBox().getBounds(), su, this);
-			cuboInicial.getBranchGroup().addChild(obstacleCollisionControl);
-			obstacleCollisionControl = new ObstacleCollisionControl(cuboInicial.getBox().getShape(Box.RIGHT), cuboInicial.getBox().getBounds(), su, this);
-			cuboInicial.getBranchGroup().addChild(obstacleCollisionControl);
-			su.sceneBG.addChild(cuboInicial.getBranchGroup());
-		}
+		this.iniciarObstaculos();
 
 		// Iniciar um conjunto de 10 alvos
-		for (int i = 0; i < 10; i++) {
-			cuboInicial = i % 2 == 0 ? cuboControl.gerarAlvos(true)
-					: cuboControl.gerarAlvos(false);
-			alvos.add(cuboInicial);
-			targetCollisionControl = new TargetCollisionControl(cuboInicial.getBox().getShape(Box.BACK), cuboInicial.getBox().getBounds(), su, this, cuboInicial);
-			cuboInicial.getBranchGroup().addChild(targetCollisionControl);
-			targetCollisionControl = new TargetCollisionControl(cuboInicial.getBox().getShape(Box.FRONT), cuboInicial.getBox().getBounds(), su, this, cuboInicial);
-			cuboInicial.getBranchGroup().addChild(targetCollisionControl);
-			targetCollisionControl = new TargetCollisionControl(cuboInicial.getBox().getShape(Box.TOP), cuboInicial.getBox().getBounds(), su, this, cuboInicial);
-			cuboInicial.getBranchGroup().addChild(targetCollisionControl);
-			targetCollisionControl = new TargetCollisionControl(cuboInicial.getBox().getShape(Box.BOTTOM), cuboInicial.getBox().getBounds(), su, this, cuboInicial);
-			cuboInicial.getBranchGroup().addChild(targetCollisionControl);
-			targetCollisionControl = new TargetCollisionControl(cuboInicial.getBox().getShape(Box.LEFT), cuboInicial.getBox().getBounds(), su, this, cuboInicial);
-			cuboInicial.getBranchGroup().addChild(targetCollisionControl);
-			targetCollisionControl = new TargetCollisionControl(cuboInicial.getBox().getShape(Box.RIGHT), cuboInicial.getBox().getBounds(), su, this, cuboInicial);
-			cuboInicial.getBranchGroup().addChild(targetCollisionControl);
-			su.sceneBG.addChild(cuboInicial.getBranchGroup());
-		}
+		this.iniciarAlvos();
 
 		// Gera a parede limite do jogo
 		su.sceneBG.addChild(cuboControl.gerarParede().getBranchGroup());
+
+		// Configuração dos objetos da explosão
+		explTG = new TransformGroup();
+		explTG.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE); // will move
+		explTG.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
+
+		// t3d.set(new Vector3f(0,0,0));
+		// explTG.setTransform(t3d);
+
+		explShape = new Animacao(new Point3f(0, 1, 0), 10.0f, exploIms);
+		explTG.addChild(explShape);
+
+		// create switch for explosions
+//		explSwitch = new Switch();
+//		explSwitch.setCapability(Switch.ALLOW_SWITCH_WRITE);
+//		explSwitch.addChild(explTG);
+		// explSwitch.setWhichChild( Switch.CHILD_NONE ); // invisible initially
+//		explSwitch.setWhichChild(0); // make visible
+
+		// branchGroup holding everything
+		explBG = new BranchGroup();
+		explBG.addChild(explTG);
+
+//		su.sceneBG.addChild(explBG);
 
 		// Inicializa a janela do jogo
 		theGame = new TheGame(this, canvas3D, this.getPWIDTH(),
 				this.getPHEIGHT());
 		theGame.updateQtdBolas(bolas.size());
 	}
+	
+	public void iniciarBolas(){
+		bolas = new LinkedList<Bola>();
+		for (int i = 0; i < 10; i++) {
+			bolaInicial = bolaControl.criarBolaAleatoria(shootinPos);
+			bolas.add(bolaInicial);
+		}
+	}
 
+	public void iniciarObstaculos(){
+		obstaculos = new LinkedList<Cubo>();
+		for (int i = 0; i < 10; i++) {
+			cuboInicial = i % 2 == 0 ? cuboControl.criarCuboAleatorio(true)
+					: cuboControl.criarCuboAleatorio(false);
+			obstaculos.add(cuboInicial);
+			obstacleCollisionControl = new ObstacleCollisionControl(cuboInicial
+					.getBox().getShape(Box.BACK), cuboInicial.getBox()
+					.getBounds(), su, this);
+			cuboInicial.getBranchGroup().addChild(obstacleCollisionControl);
+			obstacleCollisionControl = new ObstacleCollisionControl(cuboInicial
+					.getBox().getShape(Box.FRONT), cuboInicial.getBox()
+					.getBounds(), su, this);
+			cuboInicial.getBranchGroup().addChild(obstacleCollisionControl);
+			obstacleCollisionControl = new ObstacleCollisionControl(cuboInicial
+					.getBox().getShape(Box.TOP), cuboInicial.getBox()
+					.getBounds(), su, this);
+			cuboInicial.getBranchGroup().addChild(obstacleCollisionControl);
+			obstacleCollisionControl = new ObstacleCollisionControl(cuboInicial
+					.getBox().getShape(Box.BOTTOM), cuboInicial.getBox()
+					.getBounds(), su, this);
+			cuboInicial.getBranchGroup().addChild(obstacleCollisionControl);
+			obstacleCollisionControl = new ObstacleCollisionControl(cuboInicial
+					.getBox().getShape(Box.LEFT), cuboInicial.getBox()
+					.getBounds(), su, this);
+			cuboInicial.getBranchGroup().addChild(obstacleCollisionControl);
+			obstacleCollisionControl = new ObstacleCollisionControl(cuboInicial
+					.getBox().getShape(Box.RIGHT), cuboInicial.getBox()
+					.getBounds(), su, this);
+			cuboInicial.getBranchGroup().addChild(obstacleCollisionControl);
+			su.sceneBG.addChild(cuboInicial.getBranchGroup());
+		}
+	}
+	
+	public void iniciarAlvos(){
+		alvos = new LinkedList<Cubo>();
+		for (int i = 0; i < 10; i++) {
+			cuboInicial = i % 2 == 0 ? cuboControl.gerarAlvos(true)
+					: cuboControl.gerarAlvos(false);
+			alvos.add(cuboInicial);
+			targetCollisionControl = new TargetCollisionControl(cuboInicial
+					.getBox().getShape(Box.BACK), cuboInicial.getBox()
+					.getBounds(), su, this, cuboInicial);
+			cuboInicial.getBranchGroup().addChild(targetCollisionControl);
+			targetCollisionControl = new TargetCollisionControl(cuboInicial
+					.getBox().getShape(Box.FRONT), cuboInicial.getBox()
+					.getBounds(), su, this, cuboInicial);
+			cuboInicial.getBranchGroup().addChild(targetCollisionControl);
+			targetCollisionControl = new TargetCollisionControl(cuboInicial
+					.getBox().getShape(Box.TOP), cuboInicial.getBox()
+					.getBounds(), su, this, cuboInicial);
+			cuboInicial.getBranchGroup().addChild(targetCollisionControl);
+			targetCollisionControl = new TargetCollisionControl(cuboInicial
+					.getBox().getShape(Box.BOTTOM), cuboInicial.getBox()
+					.getBounds(), su, this, cuboInicial);
+			cuboInicial.getBranchGroup().addChild(targetCollisionControl);
+			targetCollisionControl = new TargetCollisionControl(cuboInicial
+					.getBox().getShape(Box.LEFT), cuboInicial.getBox()
+					.getBounds(), su, this, cuboInicial);
+			cuboInicial.getBranchGroup().addChild(targetCollisionControl);
+			targetCollisionControl = new TargetCollisionControl(cuboInicial
+					.getBox().getShape(Box.RIGHT), cuboInicial.getBox()
+					.getBounds(), su, this, cuboInicial);
+			cuboInicial.getBranchGroup().addChild(targetCollisionControl);
+			su.sceneBG.addChild(cuboInicial.getBranchGroup());
+		}
+	}
+	
 	public int getPWIDTH() {
 		return PWIDTH;
 	}
@@ -242,4 +324,57 @@ public class BeginGameControl {
 	public void setShootingBall(Bola shootingBall) {
 		this.shootingBall = shootingBall;
 	}
+
+	public Animacao getExplosao() {
+		return explShape;
+	}
+
+	public void setExplosao(Animacao explosao) {
+		this.explShape = explosao;
+	}
+
+	public void showExplosion() {
+		try {
+			Texture texture;
+			System.out.println("BOOOOM!");
+//			this.explSwitch.setWhichChild(0); // make visible
+			// this.explShape.showSeries(); // boom!
+			for (int i = 0; i < this.exploIms.length; i++) {
+				this.explShape.getAppearance().getTexture().setImage(0, this.exploIms[i]);
+				this.explTG.getTransform(t3d);
+				toMove.setTranslation(new Vector3d(2, 0, 0));
+				t3d.mul(toMove);
+				this.explTG.setTransform(t3d);
+				Thread.sleep((long) (TIME * 1000)); // wait a while
+			}
+		} catch (Exception ex) {
+		}
+		// this.explSwitch.setWhichChild(Switch.CHILD_NONE); // make invisible
+	}
+	
+	public void btRestart(){
+		for (Cubo cubo : alvos)
+			su.sceneBG.removeChild(cubo.getBranchGroup());
+		for (Cubo cubo : obstaculos)
+			su.sceneBG.removeChild(cubo.getBranchGroup());
+		for (Bola bola : bolas)
+			su.sceneBG.removeChild(bola.getBranchGroup());
+		if(shootingBall!=null)
+			su.sceneBG.removeChild(shootingBall.getBranchGroup());
+		
+		this.resetThrowPosition();
+		this.iniciarAlvos();
+		this.iniciarObstaculos();
+		this.iniciarBolas();
+		this.theGame.updateQtdBolas(bolas.size());
+	}
+	
+	public void btConfig(){
+		
+	}
+	
+	public void btExit(){
+		System.exit(0);
+	}
+	
 }

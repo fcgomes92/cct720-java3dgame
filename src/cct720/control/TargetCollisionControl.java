@@ -23,19 +23,21 @@ public class TargetCollisionControl extends Behavior {
 	protected WakeupCriterion[] theCriteria;
 	/** The result of the 'OR' of the separate criteria */
 	protected WakeupOr oredCriteria;
-	
+
 	private Bola shootingBall;
 	private BeginGameControl bgc;
 	private Cubo target;
-	
+
 	protected MainUniverse su;
+
 	/**
 	 * @param theShape
 	 *            Shape3D that is to be watched for collisions.
 	 * @param theBounds
 	 *            Bounds that define the active region for this behaviour
 	 */
-	public TargetCollisionControl(Shape3D theShape, Bounds theBounds, MainUniverse su, BeginGameControl bgc, Cubo c) {
+	public TargetCollisionControl(Shape3D theShape, Bounds theBounds,
+			MainUniverse su, BeginGameControl bgc, Cubo c) {
 		this.su = su;
 		this.bgc = bgc;
 		this.target = c;
@@ -71,24 +73,18 @@ public class TargetCollisionControl extends Behavior {
 	 * the wake up condition is set to be the OR'ed criterion again.
 	 */
 	public void processStimulus(Enumeration criteria) {
-
 		while (criteria.hasMoreElements()) {
 			WakeupCriterion theCriterion = (WakeupCriterion) criteria
 					.nextElement();
 			if (theCriterion instanceof WakeupOnCollisionEntry) {
-				System.out.println("Inicio da colisão");
-				su.sceneBG.removeChild(bgc.getShootingBall().getBranchGroup());
-				su.sceneBG.removeChild(target.getBranchGroup());
-			} else if (theCriterion instanceof WakeupOnCollisionExit) {
-				System.out.println("Stopped colliding with  "
-						+ collidingShape.getClass());
-			} else {
-				System.out.println("Moved whilst colliding with "
-						+ collidingShape.getUserData());
+				if (bgc.getShootingBall() != null) {
+					su.sceneBG.removeChild(bgc.getShootingBall()
+							.getBranchGroup());
+					su.sceneBG.removeChild(target.getBranchGroup());
+					bgc.showExplosion();
+				}
 			}
 		}
 		wakeupOn(oredCriteria);
 	}
-	
-	
 }

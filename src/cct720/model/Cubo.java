@@ -30,12 +30,14 @@ public class Cubo {
 
 		this.box = new Box(pontos[0],pontos[1],pontos[2],blueApp);
 		this.box.setUserData("Fix");
+		this.box.setName("Fix");
 
 		Transform3D td = new Transform3D();
 		td.set(p1);
 
 		this.tg = new TransformGroup(td);
 		this.tg.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+		this.tg.setCapability(BranchGroup.ALLOW_DETACH);
 		this.tg.addChild(this.box); // set its radius and appearance
 
 		this.branchGroup.setCapability(BranchGroup.ALLOW_DETACH);
@@ -43,6 +45,9 @@ public class Cubo {
 		this.branchGroup.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);
 		this.branchGroup.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
 
+		this.tg.setName("Fix");
+		this.branchGroup.setName("Fix");
+		
 		this.branchGroup.addChild(this.tg);
 
 		this.peso = peso;
@@ -56,7 +61,9 @@ public class Cubo {
 		blueApp.setMaterial(blueMat);
 
 		this.box = new Box(pontos[0],pontos[1],pontos[2],blueApp);
-
+		this.box.setUserData("Parede");
+		this.box.setName("Parede");
+		
 		Transform3D td = new Transform3D();
 		td.set(p1);
 
@@ -69,6 +76,9 @@ public class Cubo {
 		this.branchGroup.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);
 		this.branchGroup.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
 
+		this.tg.setName("Parede");
+		this.branchGroup.setName("Parede");
+		
 		this.branchGroup.addChild(this.tg);
 
 		this.peso = peso;

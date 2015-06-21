@@ -1,5 +1,7 @@
 package cct720.control;
 
+import java.util.Random;
+
 import javax.media.j3d.Transform3D;
 import javax.vecmath.Vector3d;
 import javax.vecmath.Vector3f;
@@ -15,7 +17,8 @@ public class BolaControl {
 //	private float ajusteZ = 0.0f;
 	
 	public Bola criarBolaAleatoria(Vector3f posInical){
-		return new Bola(posInical,(float)Math.random()*30.0f,(float)Math.random()*1.0f);
+		Random rand = new Random();
+		return new Bola(posInical,(float)(rand.nextInt((30 - 10) + 1) + 10),(float)((rand.nextInt((100 - 50) + 1) + 50))/100);
 	}
 	
 	public boolean moveBola(float TIME_STEP, 

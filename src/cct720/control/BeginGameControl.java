@@ -9,9 +9,7 @@ import java.util.Queue;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Canvas3D;
 import javax.media.j3d.ImageComponent2D;
-import javax.media.j3d.Switch;
 import javax.media.j3d.Texture;
-import javax.media.j3d.Texture2D;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
 import javax.vecmath.Point3f;
@@ -50,6 +48,7 @@ public class BeginGameControl {
 	private float x = X0;
 	private float y = Y0;
 	private float z = 0.0f;
+	private int pontos = 0;
 
 	private Transform3D toMove = new Transform3D();
 	private Transform3D toRot = new Transform3D();
@@ -61,6 +60,7 @@ public class BeginGameControl {
 	private TheGame theGame;
 	private BolaControl bolaControl = new BolaControl();
 	private CuboControl cuboControl = new CuboControl();
+	private ConfigControl configControl = new ConfigControl();
 	private ObstacleCollisionControl obstacleCollisionControl;
 	private TargetCollisionControl targetCollisionControl;
 	private Queue<Bola> bolas = new LinkedList<Bola>();
@@ -72,6 +72,7 @@ public class BeginGameControl {
 	private Cubo cuboInicial = null;
 	private Bola bolaInicial = null;
 	
+	private Canvas3D canvas3D;
 
 	// Carrega as imagens da explosão
 //	private Switch explSwitch;
@@ -90,7 +91,7 @@ public class BeginGameControl {
 		// Gerar Canvas3D
 		GraphicsConfiguration config = SimpleUniverse
 				.getPreferredConfiguration();
-		Canvas3D canvas3D = new Canvas3D(config);
+		canvas3D = new Canvas3D(config);
 		canvas3D.addKeyListener(new KeyListener() {
 
 			@Override
@@ -103,7 +104,7 @@ public class BeginGameControl {
 			public void keyPressed(KeyEvent k) {
 				Bola b;
 				Cubo c;
-				System.out.println("Key pressed: " + k.getKeyChar());
+//				System.out.println("Key pressed: " + k.getKeyChar());
 				/*** Teclas para alterar a o estado de lançamento ou recarga ****/
 				if (k.getKeyChar() == (KeyEvent.VK_SPACE)) {
 					if (shootingBall != null) {
@@ -128,6 +129,7 @@ public class BeginGameControl {
 						su.sceneBG.addChild(b.getBranchGroup());
 						shootingBall = b;
 						theGame.updateQtdBolas(bolas.size());
+						theGame.updateVelocidade(Math.abs((int)V0x));
 
 					}
 					/*** Teclas para alterar posição de lançamento da bola ****/
@@ -167,11 +169,13 @@ public class BeginGameControl {
 					}
 					/*** Teclas para alterar a velocidade inicial de lançamento ****/
 				} else if (k.getKeyChar() == 'z') {
-					if (V0x >= 0.0f)
+					if (V0x < 0.0f)
 						V0x += 1.0f;
+					theGame.updateVelocidade(Math.abs((int)V0x));
 				} else if (k.getKeyChar() == 'x') {
-					if (V0x <= -30.0f)
+					if (V0x > -30.0f)
 						V0x -= 1.0f;
+					theGame.updateVelocidade(Math.abs((int)V0x));
 				}
 
 			}
@@ -222,6 +226,9 @@ public class BeginGameControl {
 		theGame = new TheGame(this, canvas3D, this.getPWIDTH(),
 				this.getPHEIGHT());
 		theGame.updateQtdBolas(bolas.size());
+		theGame.updateGravidade((int)this.gravity);
+		theGame.updatePontos(this.pontos);
+		theGame.updateVelocidade(Math.abs((int)this.V0x));
 	}
 	
 	public void iniciarBolas(){
@@ -241,26 +248,32 @@ public class BeginGameControl {
 			obstacleCollisionControl = new ObstacleCollisionControl(cuboInicial
 					.getBox().getShape(Box.BACK), cuboInicial.getBox()
 					.getBounds(), su, this);
+			obstacleCollisionControl.setCapability(BranchGroup.ALLOW_DETACH);
 			cuboInicial.getBranchGroup().addChild(obstacleCollisionControl);
 			obstacleCollisionControl = new ObstacleCollisionControl(cuboInicial
 					.getBox().getShape(Box.FRONT), cuboInicial.getBox()
 					.getBounds(), su, this);
+			obstacleCollisionControl.setCapability(BranchGroup.ALLOW_DETACH);
 			cuboInicial.getBranchGroup().addChild(obstacleCollisionControl);
 			obstacleCollisionControl = new ObstacleCollisionControl(cuboInicial
 					.getBox().getShape(Box.TOP), cuboInicial.getBox()
 					.getBounds(), su, this);
+			obstacleCollisionControl.setCapability(BranchGroup.ALLOW_DETACH);
 			cuboInicial.getBranchGroup().addChild(obstacleCollisionControl);
 			obstacleCollisionControl = new ObstacleCollisionControl(cuboInicial
 					.getBox().getShape(Box.BOTTOM), cuboInicial.getBox()
 					.getBounds(), su, this);
+			obstacleCollisionControl.setCapability(BranchGroup.ALLOW_DETACH);
 			cuboInicial.getBranchGroup().addChild(obstacleCollisionControl);
 			obstacleCollisionControl = new ObstacleCollisionControl(cuboInicial
 					.getBox().getShape(Box.LEFT), cuboInicial.getBox()
 					.getBounds(), su, this);
+			obstacleCollisionControl.setCapability(BranchGroup.ALLOW_DETACH);
 			cuboInicial.getBranchGroup().addChild(obstacleCollisionControl);
 			obstacleCollisionControl = new ObstacleCollisionControl(cuboInicial
 					.getBox().getShape(Box.RIGHT), cuboInicial.getBox()
 					.getBounds(), su, this);
+			obstacleCollisionControl.setCapability(BranchGroup.ALLOW_DETACH);
 			cuboInicial.getBranchGroup().addChild(obstacleCollisionControl);
 			su.sceneBG.addChild(cuboInicial.getBranchGroup());
 		}
@@ -275,26 +288,32 @@ public class BeginGameControl {
 			targetCollisionControl = new TargetCollisionControl(cuboInicial
 					.getBox().getShape(Box.BACK), cuboInicial.getBox()
 					.getBounds(), su, this, cuboInicial);
+			targetCollisionControl.setCapability(BranchGroup.ALLOW_DETACH);
 			cuboInicial.getBranchGroup().addChild(targetCollisionControl);
 			targetCollisionControl = new TargetCollisionControl(cuboInicial
 					.getBox().getShape(Box.FRONT), cuboInicial.getBox()
 					.getBounds(), su, this, cuboInicial);
+			targetCollisionControl.setCapability(BranchGroup.ALLOW_DETACH);
 			cuboInicial.getBranchGroup().addChild(targetCollisionControl);
 			targetCollisionControl = new TargetCollisionControl(cuboInicial
 					.getBox().getShape(Box.TOP), cuboInicial.getBox()
 					.getBounds(), su, this, cuboInicial);
+			targetCollisionControl.setCapability(BranchGroup.ALLOW_DETACH);
 			cuboInicial.getBranchGroup().addChild(targetCollisionControl);
 			targetCollisionControl = new TargetCollisionControl(cuboInicial
 					.getBox().getShape(Box.BOTTOM), cuboInicial.getBox()
 					.getBounds(), su, this, cuboInicial);
+			targetCollisionControl.setCapability(BranchGroup.ALLOW_DETACH);
 			cuboInicial.getBranchGroup().addChild(targetCollisionControl);
 			targetCollisionControl = new TargetCollisionControl(cuboInicial
 					.getBox().getShape(Box.LEFT), cuboInicial.getBox()
 					.getBounds(), su, this, cuboInicial);
+			targetCollisionControl.setCapability(BranchGroup.ALLOW_DETACH);
 			cuboInicial.getBranchGroup().addChild(targetCollisionControl);
 			targetCollisionControl = new TargetCollisionControl(cuboInicial
 					.getBox().getShape(Box.RIGHT), cuboInicial.getBox()
 					.getBounds(), su, this, cuboInicial);
+			targetCollisionControl.setCapability(BranchGroup.ALLOW_DETACH);
 			cuboInicial.getBranchGroup().addChild(targetCollisionControl);
 			su.sceneBG.addChild(cuboInicial.getBranchGroup());
 		}
@@ -353,12 +372,17 @@ public class BeginGameControl {
 	}
 	
 	public void btRestart(){
-		for (Cubo cubo : alvos)
+		this.pontos = 0;
+		this.gravity = 10.0f;
+		for (Cubo cubo : alvos){
 			su.sceneBG.removeChild(cubo.getBranchGroup());
-		for (Cubo cubo : obstaculos)
+		}
+		for (Cubo cubo : obstaculos){
 			su.sceneBG.removeChild(cubo.getBranchGroup());
-		for (Bola bola : bolas)
+		}
+		for (Bola bola : bolas){
 			su.sceneBG.removeChild(bola.getBranchGroup());
+		}
 		if(shootingBall!=null)
 			su.sceneBG.removeChild(shootingBall.getBranchGroup());
 		
@@ -367,14 +391,43 @@ public class BeginGameControl {
 		this.iniciarObstaculos();
 		this.iniciarBolas();
 		this.theGame.updateQtdBolas(bolas.size());
+		this.theGame.updatePontos(this.pontos);
+		this.theGame.updateGravidade(this.gravity);
+		this.canvas3D.requestFocus();
+	}
+	
+	public void ganhaPto(int qtd){
+		this.pontos+=qtd;
+		this.theGame.updatePontos(this.pontos);
+	}
+	
+	public void alterarGravidade(float g){
+		this.gravity = g;
+		this.theGame.updateGravidade(this.gravity);
 	}
 	
 	public void btConfig(){
-		
+		this.configControl.showConfigPanel(this);
+		this.canvas3D.requestFocus();
 	}
 	
 	public void btExit(){
 		System.exit(0);
 	}
-	
+
+	public int getPontos() {
+		return pontos;
+	}
+
+	public void setPontos(int pontos) {
+		this.pontos = pontos;
+	}
+
+	public TheGame getTheGame() {
+		return theGame;
+	}
+
+	public void setTheGame(TheGame theGame) {
+		this.theGame = theGame;
+	}
 }

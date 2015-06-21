@@ -4,6 +4,7 @@ import java.util.Enumeration;
 
 import javax.media.j3d.Behavior;
 import javax.media.j3d.Bounds;
+import javax.media.j3d.Node;
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.WakeupCriterion;
 import javax.media.j3d.WakeupOnCollisionEntry;
@@ -75,7 +76,8 @@ public class ObstacleCollisionControl extends Behavior {
 			WakeupCriterion theCriterion = (WakeupCriterion) criteria
 					.nextElement();
 			if (theCriterion instanceof WakeupOnCollisionEntry) {
-				if (bgc.getShootingBall() != null) {
+				String colidido = ((WakeupOnCollisionEntry) theCriterion).getTriggeringPath().getObject().getParent().getName();
+				if (bgc.getShootingBall() != null && colidido.equals("Bola")) {
 					su.sceneBG.removeChild(bgc.getShootingBall()
 							.getBranchGroup());
 					bgc.showExplosion();

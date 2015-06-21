@@ -32,6 +32,7 @@ public class Bola {
 		this.raio = raio;
 		this.sphere = new Sphere(raio, blueApp);
 		this.sphere.setUserData("Shooting Ball");
+		this.sphere.setName("Bola");
 
 		Transform3D td = new Transform3D();
 		td.set(posInicial);
@@ -39,6 +40,9 @@ public class Bola {
 		this.tg = new TransformGroup(td);
 		this.tg.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
 		this.tg.addChild(this.sphere); // set its radius and appearance
+		
+		this.tg.setName("Bola");
+		this.branchGroup.setName("Bola");
 		
 		this.branchGroup.setCapability(BranchGroup.ALLOW_DETACH);
 		this.branchGroup.setCapability(BranchGroup.ALLOW_CHILDREN_READ);

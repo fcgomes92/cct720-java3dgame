@@ -117,8 +117,8 @@ public class TheGame extends JFrame{
 		this.labelVelocidade.setText(String.format("Velocidade: %03d m/s   ", qtd));
 	}
 	
-	public void updateGravidade(int qtd){
-		this.labelGravidade.setText(String.format("Gravidade: %03d m/s²   ", qtd));
+	public void updateGravidade(float qtd){
+		this.labelGravidade.setText(String.format("Gravidade: %02.2f m/s²   ", qtd));
 	}
 	
 	public JLabel getLabelQuantidadeBolas() {

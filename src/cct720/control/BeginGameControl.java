@@ -3,15 +3,24 @@ package cct720.control;
 import java.awt.GraphicsConfiguration;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.Queue;
 
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Canvas3D;
 import javax.media.j3d.ImageComponent2D;
-import javax.media.j3d.Texture;
+import javax.media.j3d.Switch;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.vecmath.Point3f;
 import javax.vecmath.Vector3d;
 import javax.vecmath.Vector3f;
@@ -68,16 +77,20 @@ public class BeginGameControl {
 	private Queue<Cubo> alvos = new LinkedList<Cubo>();
 	private Bola shootingBall;
 	private MainUniverse su;
-	
+
 	private Cubo cuboInicial = null;
 	private Bola bolaInicial = null;
-	
+
 	private Canvas3D canvas3D;
 
+	private BeginGameControl bgc;
+	
+	public boolean executarExplosao = false;
+
 	// Carrega as imagens da explosão
-//	private Switch explSwitch;
+	private Switch explSwitch;
 	private float explSize = 5.0f;
-	private Animacao explShape;
+	private Animacao expl1Shape, expl2Shape, expl3Shape, expl4Shape;
 	private AnimacaoControl animacaoControl = new AnimacaoControl();
 	private ImageComponent2D[] exploIms;
 	private TransformGroup explTG;
@@ -95,24 +108,28 @@ public class BeginGameControl {
 		canvas3D.addKeyListener(new KeyListener() {
 
 			@Override
-			public void keyTyped(KeyEvent e) {}
+			public void keyTyped(KeyEvent e) {
+			}
 
 			@Override
-			public void keyReleased(KeyEvent e) {}
+			public void keyReleased(KeyEvent e) {
+			}
 
 			@Override
 			public void keyPressed(KeyEvent k) {
 				Bola b;
 				Cubo c;
-//				System.out.println("Key pressed: " + k.getKeyChar());
+				// System.out.println("Key pressed: " + k.getKeyChar());
 				/*** Teclas para alterar a o estado de lançamento ou recarga ****/
 				if (k.getKeyChar() == (KeyEvent.VK_SPACE)) {
 					if (shootingBall != null) {
 						try {
 							if (!bolaControl.moveBola(TIME, X0, Y0, x, y, z,
-									V0x, gravity, shootingBall))
+									V0x, gravity, shootingBall, bgc))
 								bolaControl.deformBola(TIME, X0, Y0, x, y, z,
 										V0x, gravity, shootingBall);
+							if (executarExplosao)
+								showExplosion();
 							// System.out.println("x: " + x +
 							// "\ny: " + y +
 							// "\nz: " + z);
@@ -129,7 +146,7 @@ public class BeginGameControl {
 						su.sceneBG.addChild(b.getBranchGroup());
 						shootingBall = b;
 						theGame.updateQtdBolas(bolas.size());
-						theGame.updateVelocidade(Math.abs((int)V0x));
+						theGame.updateVelocidade(Math.abs((int) V0x));
 
 					}
 					/*** Teclas para alterar posição de lançamento da bola ****/
@@ -171,11 +188,11 @@ public class BeginGameControl {
 				} else if (k.getKeyChar() == 'z') {
 					if (V0x < 0.0f)
 						V0x += 1.0f;
-					theGame.updateVelocidade(Math.abs((int)V0x));
+					theGame.updateVelocidade(Math.abs((int) V0x));
 				} else if (k.getKeyChar() == 'x') {
 					if (V0x > -30.0f)
 						V0x -= 1.0f;
-					theGame.updateVelocidade(Math.abs((int)V0x));
+					theGame.updateVelocidade(Math.abs((int) V0x));
 				}
 
 			}
@@ -206,32 +223,39 @@ public class BeginGameControl {
 		// t3d.set(new Vector3f(0,0,0));
 		// explTG.setTransform(t3d);
 
-		explShape = new Animacao(new Point3f(0, 1, 0), 10.0f, exploIms);
-		explTG.addChild(explShape);
+		expl1Shape = new Animacao(new Point3f(0, 1, 0), 10.0f, exploIms, 1);
+		expl2Shape = new Animacao(new Point3f(0, 1, 0), 10.0f, exploIms, 2);
+		expl3Shape = new Animacao(new Point3f(0, 1, 0), 10.0f, exploIms, 3);
+		expl4Shape = new Animacao(new Point3f(0, 1, 0), 10.0f, exploIms, 4);
+		explTG.addChild(expl1Shape);
+		explTG.addChild(expl2Shape);
+		explTG.addChild(expl3Shape);
+		explTG.addChild(expl4Shape);
 
 		// create switch for explosions
-//		explSwitch = new Switch();
-//		explSwitch.setCapability(Switch.ALLOW_SWITCH_WRITE);
-//		explSwitch.addChild(explTG);
-		// explSwitch.setWhichChild( Switch.CHILD_NONE ); // invisible initially
-//		explSwitch.setWhichChild(0); // make visible
+		explSwitch = new Switch();
+		explSwitch.setCapability(Switch.ALLOW_SWITCH_WRITE);
+		explSwitch.addChild(explTG);
+		explSwitch.setWhichChild(Switch.CHILD_NONE); // invisible initially
+		// explSwitch.setWhichChild(0); // make visible
 
 		// branchGroup holding everything
 		explBG = new BranchGroup();
-		explBG.addChild(explTG);
+		explBG.addChild(explSwitch);
 
-//		su.sceneBG.addChild(explBG);
+		su.sceneBG.addChild(explBG);
 
 		// Inicializa a janela do jogo
 		theGame = new TheGame(this, canvas3D, this.getPWIDTH(),
 				this.getPHEIGHT());
 		theGame.updateQtdBolas(bolas.size());
-		theGame.updateGravidade((int)this.gravity);
+		theGame.updateGravidade((int) this.gravity);
 		theGame.updatePontos(this.pontos);
-		theGame.updateVelocidade(Math.abs((int)this.V0x));
+		theGame.updateVelocidade(Math.abs((int) this.V0x));
+		this.bgc = this;
 	}
-	
-	public void iniciarBolas(){
+
+	public void iniciarBolas() {
 		bolas = new LinkedList<Bola>();
 		for (int i = 0; i < 10; i++) {
 			bolaInicial = bolaControl.criarBolaAleatoria(shootinPos);
@@ -239,7 +263,7 @@ public class BeginGameControl {
 		}
 	}
 
-	public void iniciarObstaculos(){
+	public void iniciarObstaculos() {
 		obstaculos = new LinkedList<Cubo>();
 		for (int i = 0; i < 10; i++) {
 			cuboInicial = i % 2 == 0 ? cuboControl.criarCuboAleatorio(true)
@@ -278,8 +302,8 @@ public class BeginGameControl {
 			su.sceneBG.addChild(cuboInicial.getBranchGroup());
 		}
 	}
-	
-	public void iniciarAlvos(){
+
+	public void iniciarAlvos() {
 		alvos = new LinkedList<Cubo>();
 		for (int i = 0; i < 10; i++) {
 			cuboInicial = i % 2 == 0 ? cuboControl.gerarAlvos(true)
@@ -318,7 +342,7 @@ public class BeginGameControl {
 			su.sceneBG.addChild(cuboInicial.getBranchGroup());
 		}
 	}
-	
+
 	public int getPWIDTH() {
 		return PWIDTH;
 	}
@@ -345,47 +369,68 @@ public class BeginGameControl {
 	}
 
 	public Animacao getExplosao() {
-		return explShape;
+		return expl1Shape;
 	}
 
 	public void setExplosao(Animacao explosao) {
-		this.explShape = explosao;
+		this.expl1Shape = explosao;
 	}
 
 	public void showExplosion() {
 		try {
-			Texture texture;
-			System.out.println("BOOOOM!");
-//			this.explSwitch.setWhichChild(0); // make visible
-			// this.explShape.showSeries(); // boom!
+//			System.out.println("BOOOOM!");
+			try {
+				 
+		         // Open an audio input stream.
+		         InputStream input = new FileInputStream("sounds/boom"+(Math.random()>0.5d?"1":"2")+".wav");
+		         InputStream bufferedIn = new BufferedInputStream(input);
+		         AudioInputStream audioIn = AudioSystem.getAudioInputStream(bufferedIn);
+		         Clip clip = AudioSystem.getClip();
+		         // Open audio clip and load samples from the audio input stream.
+		         clip.open(audioIn);
+		         clip.start();
+		      } catch (UnsupportedAudioFileException e) {
+		         e.printStackTrace();
+		      } catch (IOException e) {
+		         e.printStackTrace();
+		      } catch (LineUnavailableException e) {
+		         e.printStackTrace();
+		      }
+			executarExplosao = false;
+			this.explSwitch.setWhichChild(0); // make visible
 			for (int i = 0; i < this.exploIms.length; i++) {
-				this.explShape.getAppearance().getTexture().setImage(0, this.exploIms[i]);
-				this.explTG.getTransform(t3d);
-				toMove.setTranslation(new Vector3d(2, 0, 0));
-				t3d.mul(toMove);
-				this.explTG.setTransform(t3d);
-				Thread.sleep((long) (TIME * 1000)); // wait a while
+				try {
+					expl1Shape.getAppearance().getTexture().setImage(0, exploIms[i]);
+					expl2Shape.getAppearance().getTexture().setImage(0, exploIms[i]);
+					expl3Shape.getAppearance().getTexture().setImage(0, exploIms[i]);
+					expl4Shape.getAppearance().getTexture().setImage(0, exploIms[i]);
+					Thread.sleep(100); // wait a while
+				} catch (Exception ex) {
+				}
 			}
+//			this.expl1Shape.showSeries(); // boom!
+//			this.expl2Shape.showSeries(); // boom!
+//			this.expl3Shape.showSeries(); // boom!
+			this.explSwitch.setWhichChild(Switch.CHILD_NONE); // make invisible
 		} catch (Exception ex) {
 		}
-		// this.explSwitch.setWhichChild(Switch.CHILD_NONE); // make invisible
 	}
-	
-	public void btRestart(){
+
+	public void btRestart() {
 		this.pontos = 0;
 		this.gravity = 10.0f;
-		for (Cubo cubo : alvos){
+		for (Cubo cubo : alvos) {
 			su.sceneBG.removeChild(cubo.getBranchGroup());
 		}
-		for (Cubo cubo : obstaculos){
+		for (Cubo cubo : obstaculos) {
 			su.sceneBG.removeChild(cubo.getBranchGroup());
 		}
-		for (Bola bola : bolas){
+		for (Bola bola : bolas) {
 			su.sceneBG.removeChild(bola.getBranchGroup());
 		}
-		if(shootingBall!=null)
+		if (shootingBall != null)
 			su.sceneBG.removeChild(shootingBall.getBranchGroup());
-		
+
 		this.resetThrowPosition();
 		this.iniciarAlvos();
 		this.iniciarObstaculos();
@@ -395,23 +440,23 @@ public class BeginGameControl {
 		this.theGame.updateGravidade(this.gravity);
 		this.canvas3D.requestFocus();
 	}
-	
-	public void ganhaPto(int qtd){
-		this.pontos+=qtd;
+
+	public void ganhaPto(int qtd) {
+		this.pontos += qtd;
 		this.theGame.updatePontos(this.pontos);
 	}
-	
-	public void alterarGravidade(float g){
+
+	public void alterarGravidade(float g) {
 		this.gravity = g;
 		this.theGame.updateGravidade(this.gravity);
 	}
-	
-	public void btConfig(){
+
+	public void btConfig() {
 		this.configControl.showConfigPanel(this);
 		this.canvas3D.requestFocus();
 	}
-	
-	public void btExit(){
+
+	public void btExit() {
 		System.exit(0);
 	}
 
@@ -429,5 +474,9 @@ public class BeginGameControl {
 
 	public void setTheGame(TheGame theGame) {
 		this.theGame = theGame;
+	}
+
+	public void updatePosExpl(Transform3D t) {
+		this.explTG.setTransform(t);
 	}
 }

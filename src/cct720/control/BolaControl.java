@@ -25,7 +25,7 @@ public class BolaControl {
 			float X0, float Y0,
 			float x, float y, float z,
 			float V0x, float gravity,
-			Bola b) throws InterruptedException {
+			Bola b, BeginGameControl bgc) throws InterruptedException {
 //		ajusteX = 0.0f;
 //		ajusteY = 0.0f;
 //		ajusteZ = 0.0f;
@@ -38,10 +38,12 @@ public class BolaControl {
 			b.getTg().getTransform(t3d);
 			t3d.setTranslation(new Vector3d(x,y,z));
 			b.getTg().setTransform(t3d);
+			if(bgc.executarExplosao)
+				break;
 			Thread.sleep((long) (TIME_STEP*1000));
 		}
 		
-		return false;
+		return true;
 	}
 	
 	public void deformBola(float TIME_STEP, 

@@ -6,6 +6,7 @@ import javax.media.j3d.Behavior;
 import javax.media.j3d.Bounds;
 import javax.media.j3d.Node;
 import javax.media.j3d.Shape3D;
+import javax.media.j3d.Transform3D;
 import javax.media.j3d.WakeupCriterion;
 import javax.media.j3d.WakeupOnCollisionEntry;
 import javax.media.j3d.WakeupOnCollisionExit;
@@ -26,6 +27,7 @@ public class ObstacleCollisionControl extends Behavior {
 
 	private Bola shootingBall;
 	private BeginGameControl bgc;
+	private Transform3D t3d = new Transform3D();
 
 	protected MainUniverse su;
 
@@ -76,12 +78,17 @@ public class ObstacleCollisionControl extends Behavior {
 			WakeupCriterion theCriterion = (WakeupCriterion) criteria
 					.nextElement();
 			if (theCriterion instanceof WakeupOnCollisionEntry) {
-				String colidido = ((WakeupOnCollisionEntry) theCriterion).getTriggeringPath().getObject().getParent().getName();
-				if (bgc.getShootingBall() != null && colidido.equals("Bola")) {
-					su.sceneBG.removeChild(bgc.getShootingBall()
-							.getBranchGroup());
-					bgc.showExplosion();
-				}
+				Node colidido = ((WakeupOnCollisionEntry) theCriterion)
+						.getTriggeringPath().getObject().getParent();
+				if (colidido != null && colidido.getName() != null)
+					if (bgc.getShootingBall() != null
+							&& colidido.getName().equals("Bola")) {
+						su.sceneBG.removeChild(bgc.getShootingBall()
+								.getBranchGroup());
+						bgc.executarExplosao = true;
+						colidido.getLocalToVworld(t3d);
+						bgc.updatePosExpl(t3d);
+					}
 			}
 			wakeupOn(oredCriteria);
 		}
